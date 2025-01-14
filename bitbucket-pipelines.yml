@@ -1,0 +1,44 @@
+image: maven:3.8-amazoncorretto-17
+
+pipelines:
+  default:
+    - step:
+        name: Build and test
+        script:
+          - mvn clean install -Dspring.profiles.active=dev
+        artifacts:
+          - target/naduvani-real-estate-0.0.1-SNAPSHOT.jar
+
+#    - step:
+#        name: Deploy artifacts using SCP to PROD
+#        deployment: production
+#        script:
+#          - pipe: atlassian/scp-deploy:0.3.3
+#            variables:
+#              USER: 'ubuntu'
+#              SERVER: "ec2-13-60-15-120.eu-north-1.compute.amazonaws.com"
+#              REMOTE_PATH: '/home/test'
+#              LOCAL_PATH: 'a.txt'
+#          - ssh
+
+    # Modify the Deploy to Server step to use SSH with PEM private key
+    - step:
+        name: Deploy to Server with dev profile
+        image: atlassian/default-image:2
+        deployment: production
+        script:
+          # Install dependencies
+          - apt-get update && apt-get install -y sshpass
+          # Install OpenSSH client for ssh-keygen
+          - apt-get install -y openssh-client
+          # Create SSH directory
+          - mkdir -p ~/.ssh
+          # Copy PEM private key
+          - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          # Set permissions for private key
+          - chmod 600 ~/.ssh/id_rsa
+          # Copy the JAR file to the server
+          - scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no target/naduvani-real-estate-0.0.1-SNAPSHOT.jar ubuntu@ec2-13-60-15-120.eu-north-1.compute.amazonaws.com:/home/test
+          # SSH into the server and run the JAR with the dev profile
+          - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@ec2-13-60-15-120.eu-north-1.compute.amazonaws.com "java -jar /home/test/naduvani-real-estate-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev"
+

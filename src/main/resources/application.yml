@@ -1,0 +1,27 @@
+security.jwt.token.secret_key: mysecretkeyfortestingJWT
+server:
+  port: 8080
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/naduvani?createDatabaseIfNotExist=true
+    username: root
+    password: Wednesday1@3
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days
+
+upload.image.dir: C:\jp\myWork\naduvani\nadvani_frond-end\src\assets\images\
